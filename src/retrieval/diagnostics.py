@@ -5,9 +5,11 @@ import re
 from statistics import mean
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
 from core.utils import first_sentence, normalize_whitespace, read_json, write_json
+from retrieval.index import LocalEmbeddingIndex
 
 DOI_PATTERN = re.compile(r"10\.\d{4,9}/[^\s,;)\]`'\"]+", re.IGNORECASE)
 NOT_FOUND_MARKERS = ("not found", "could not find", "no exact paper match", "has no", "don't know", "do not know")
@@ -155,6 +157,82 @@ def diagnose_agent_answers(
         "admitted_missing": sum(not case["correct"] and not case["silent_failure"] for case in cases),
         "lookup_fallbacks": sum(case["lookup_fell_back_to_search"] for case in cases),
         "top_doc_changed": sum(case["top_doc_changed"] for case in cases),
+    }
+    report = {"summary": summary, "cases": cases}
+    if output_path is not None:
+        write_json(output_path, report)
+    return report
+
+
+def _vectors_by_paper(index: LocalEmbeddingIndex) -> tuple[dict[str, np.ndarray], int]:
+    stored = index.collection.get(include=["embeddings", "metadatas"])
+    vectors: dict[str, np.ndarray] = {}
+    duplicates = 0
+    for embedding, metadata in zip(stored["embeddings"], stored["metadatas"], strict=True):
+        paper_id = str(metadata["paper_id"]).lower()
+        if paper_id in vectors:
+            duplicates += 1
+            continue
+        vectors[paper_id] = np.asarray(embedding, dtype=float)
+    return vectors, duplicates
+
+
+def compare_retrieval(
+    baseline_index: LocalEmbeddingIndex,
+    candidate_index: LocalEmbeddingIndex,
+    questions: list[str | dict[str, Any]],
+    top_k: int | None = None,
+    output_path: Path | None = None,
+) -> dict[str, Any]:
+    """Check whether a candidate collection retrieves like the baseline.
+
+    Two levels: the stored vector of every paper (same text -> same MiniLM vector),
+    and the ranked top-k hits for each question. A faithful repair should match both.
+    """
+    base_vectors, _ = _vectors_by_paper(baseline_index)
+    candidate_vectors, candidate_duplicates = _vectors_by_paper(candidate_index)
+    shared = sorted(base_vectors.keys() & candidate_vectors.keys())
+    # MiniLM vectors are L2-normalised, so the dot product is the cosine similarity.
+    cosines = {paper_id: float(base_vectors[paper_id] @ candidate_vectors[paper_id]) for paper_id in shared}
+
+    cases: list[dict[str, Any]] = []
+    for item in questions:
+        question = item if isinstance(item, str) else item["question"]
+        base_hits = baseline_index.search(question, top_k=top_k)
+        candidate_hits = candidate_index.search(question, top_k=top_k)
+        base_ids = [hit.paper_id.lower() for hit in base_hits]
+        candidate_ids = [hit.paper_id.lower() for hit in candidate_hits]
+        candidate_scores = {hit.paper_id.lower(): hit.score for hit in candidate_hits}
+        score_diffs = [abs(hit.score - candidate_scores[hit.paper_id.lower()]) for hit in base_hits if hit.paper_id.lower() in candidate_scores]
+        cases.append(
+            {
+                "question": question,
+                "baseline_top_ids": base_ids,
+                "candidate_top_ids": candidate_ids,
+                "top1_match": bool(base_ids) and bool(candidate_ids) and base_ids[0] == candidate_ids[0],
+                "same_ranking": base_ids == candidate_ids,
+                "topk_overlap": len(set(base_ids) & set(candidate_ids)) / len(base_ids) if base_ids else 0.0,
+                "baseline_top1_score": round(base_hits[0].score, 4) if base_hits else None,
+                "candidate_top1_score": round(candidate_hits[0].score, 4) if candidate_hits else None,
+                "max_shared_score_diff": round(max(score_diffs), 6) if score_diffs else None,
+            }
+        )
+
+    summary = {
+        "baseline_collection": baseline_index.collection_name,
+        "candidate_collection": candidate_index.collection_name,
+        "baseline_docs": baseline_index.collection.count(),
+        "candidate_docs": candidate_index.collection.count(),
+        "missing_papers": sorted(base_vectors.keys() - candidate_vectors.keys()),
+        "extra_papers": sorted(candidate_vectors.keys() - base_vectors.keys()),
+        "duplicate_rows": candidate_duplicates,
+        "min_vector_cosine": round(min(cosines.values()), 6) if cosines else None,
+        "changed_vectors": sorted(paper_id for paper_id, cosine in cosines.items() if cosine < 0.9999),
+        "questions": len(cases),
+        "top1_match_rate": mean(case["top1_match"] for case in cases) if cases else 0.0,
+        "same_ranking_rate": mean(case["same_ranking"] for case in cases) if cases else 0.0,
+        "mean_topk_overlap": mean(case["topk_overlap"] for case in cases) if cases else 0.0,
+        "max_shared_score_diff": max((case["max_shared_score_diff"] or 0.0 for case in cases), default=0.0),
     }
     report = {"summary": summary, "cases": cases}
     if output_path is not None:
