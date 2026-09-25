@@ -274,5 +274,5 @@ Các kết quả thể hiện mối liên hệ trong lần chạy ghi nhận: co
 - [x] Đường dẫn báo cáo và artifacts được đối chiếu trong working tree.
 - [x] Báo cáo vai trò riêng của bốn thành viên hiện có trong `report/`.
 - [x] Không thấy credential pattern trong tracked source/report; `.env` không được commit.
-- [ ] CP6: live demo/Q&A và xác nhận bảo vệ trước lớp.
-- [ ] Từng thành viên tự nộp link repository trên VLearn LMS.
+- Nhóm không thực hiện phần trình bày live demo/Q&A; phần này không được tính là deliverable nhóm đã làm.
+- [ ] Từng thành viên tự nộp link repository trên VLearn LMS theo hướng dẫn nộp bài.
