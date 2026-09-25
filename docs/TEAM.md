@@ -13,7 +13,7 @@
 | 1 | | | | Trưởng nhóm / Pipeline Integrator (`core/`, `phase1.py`, `corruption_flow.py`) | `report/<MSSV1>_HoTen.md` |
 | 2 | | | | Data Foundation & Recovery (`crossref.py`, `cleaning.py`, raw data) | `report/<MSSV2>_HoTen.md` |
 | 3 | | | | RAG & Vector Index (`retrieval/index.py`, `embeddings.py`, ChromaDB) | `report/<MSSV3>_HoTen.md` |
-| 4 | | | | Observability & Evaluation (`quality.py` GX 1.x, `testset.py`, reporting) | `report/<MSSV4>_HoTen.md` |
+| 4 | Vũ Duy Điệp | 2A202602703 | | Data Observability & Benchmark Evaluation (`quality.py`, `reporting.py`, `testset.py`, `metrics.py`) | `report/2A202602703_VuDuyDiep.md` |
 
 *(Nếu nhóm có 3 hoặc 5-6 thành viên, xem bảng phân công chi tiết theo vai trò trong file `CHECKPOINTS.md`)*.
 
@@ -48,11 +48,9 @@
 - **Điều học được / Đóng góp chính:**
   - Cách cô lập các không gian vector để so sánh khách quan giữa dữ liệu sạch và dữ liệu bị lỗi.
 
-### ## HoVaTen4-MSSV4
-- **Vai trò:** Phụ trách Data Observability & Benchmark Evaluation.
-- **Công việc chi tiết đã hoàn thành:**
-  - Thiết lập Quality Gate theo chuẩn mới **Great Expectations 1.x** và giám sát Freshness SLA trong `src/observability/quality.py`.
-  - Xây dựng bộ câu hỏi đánh giá chuẩn trong `src/evaluation/testset.py`.
-  - Đo lường và xuất bảng đối chiếu 3 trạng thái vào `data/reports/corruption_report.md`.
-- **Điều học được / Đóng góp chính:**
-  - Cách thiết lập hệ thống cảnh báo sớm chặn đứng hiện tượng Silent Failure trước khi dữ liệu vào serving layer.
+### ## Vũ Duy Điệp — 2A202602703
+- **Vai trò:** Trưởng nhóm Data Observability & Benchmark Evaluation.
+- **Module phụ trách:** `src/observability/quality.py`, `src/observability/reporting.py`, `src/evaluation/testset.py`, `src/evaluation/metrics.py`.
+- **Artifact bàn giao:** Quality Gate/Freshness reports, `data/eval/test_set.json`, baseline/corrupted/repaired metrics và hai báo cáo Markdown trong `data/reports/`.
+- **Đóng góp chính:** Triển khai kiểm định Great Expectations 1.x, kiểm tra Freshness SLA, tạo benchmark cố định 10 câu hỏi và tổng hợp bảng so sánh ba trạng thái.
+- **Báo cáo cá nhân:** `report/2A202602703_VuDuyDiep.md`.
