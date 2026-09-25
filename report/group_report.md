@@ -267,10 +267,12 @@ Các kết quả thể hiện mối liên hệ trong lần chạy ghi nhận: co
 - [x] Thông tin nhóm/repository theo `docs/TEAM.md` và remote metadata.
 - [x] Phân công khớp module/artifact; MSSV còn thiếu để N/A.
 - [x] CP0–CP5: raw snapshot, clean data, test set, 3 Chroma collections, baseline/corrupted/repaired metrics, quality/freshness reports, corruption log và comparison report đều có trong repo; commit `0c809ab` ghi nhận cả hai pipeline exit 0.
+- [x] PR #12 đã merge; commit report cuối đã được đẩy lên remote `main`.
+- [x] GitHub Contributors API liệt kê tài khoản của cả bốn thành viên: `yohan-vinai`, `elysszxje`, `t00-tuannguyen`, `VuDuyDiepAI`.
 - [x] Ba trạng thái dùng cùng `data/eval/test_set.json`.
 - [x] Metrics và quality/freshness khớp JSON artifacts đã lưu.
 - [x] Đường dẫn báo cáo và artifacts được đối chiếu trong working tree.
 - [x] Báo cáo vai trò riêng của bốn thành viên hiện có trong `report/`.
 - [x] Không thấy credential pattern trong tracked source/report; `.env` không được commit.
 - [ ] CP6: live demo/Q&A và xác nhận bảo vệ trước lớp.
-- [ ] Kiểm tra contributor graph trên GitHub `main`; từng thành viên tự nộp link repository trên VLearn LMS.
+- [ ] Từng thành viên tự nộp link repository trên VLearn LMS.
