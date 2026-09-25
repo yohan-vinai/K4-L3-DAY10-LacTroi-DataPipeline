@@ -24,7 +24,7 @@
 
 **Tóm tắt của nhóm:**
 
-Nhóm đã triển khai baseline pipeline, kiểm tra quality/freshness, benchmark RAG 10 câu và luồng tiêm lỗi/repair từ raw snapshot. Artifacts baseline ghi nhận 24 bài báo, Retrieval Hit Rate 1.0000, Mean Token F1 1.0000, Judge Accuracy 1.0000, Judge Score 5.0; 6 expectation và Freshness SLA đều pass. Corruption seed 42 loại 5 bài mới nhất, làm rỗng summary ở 4 dòng, thêm noise vào 3 dòng, rút title ở 3 dòng, làm stale 6 dòng và nhân bản 3 dòng; dataset còn 22 dòng. Quality Gate phát hiện duplicate `paper_id` và summary quá ngắn; freshness báo stale ratio 27.27%. Trên cùng test set, hit rate còn 0.5000, Token F1 còn 0.6506 và Judge Score còn 3.4. Answer artifacts ghi judge dùng fallback heuristic vì LLM evaluator không khả dụng; các điểm này không phải kết quả LLM Judge trực tiếp. Repair tạo lại 24 dòng từ raw snapshot, quality/freshness pass và metrics trở lại baseline. Commit test mới nhất của PR ghi nhận cả hai pipeline exit 0 và artifacts có timestamp 2026-09-25 10:51 UTC. Trong lượt rà soát này, baseline rerun local dừng ở bước tải embedding model do Hugging Face DNS không truy cập được; smoke test corruption/GX/freshness chạy local thành công. Tập dữ liệu nhỏ và test set 10 câu là giới hạn chính.
+Nhóm đã hoàn thành CP0–CP5: ingestion từ raw snapshot, cleaning, benchmark RAG 10 câu, baseline, corruption, repair và báo cáo đối chiếu. Artifacts baseline ghi nhận 24 bài báo, Retrieval Hit Rate 1.0000, Mean Token F1 1.0000, Judge Accuracy 1.0000, Judge Score 5.0; 6 expectation và Freshness SLA đều pass. Corruption seed 42 loại 5 bài mới nhất, làm rỗng summary ở 4 dòng, thêm noise vào 3 dòng, rút title ở 3 dòng, làm stale 6 dòng và nhân bản 3 dòng; dataset còn 22 dòng. Quality Gate phát hiện duplicate `paper_id` và summary quá ngắn; freshness báo stale ratio 27.27%. Trên cùng test set, hit rate còn 0.5000, Token F1 còn 0.6506 và Judge Score còn 3.4. Answer artifacts ghi judge dùng fallback heuristic vì LLM evaluator không khả dụng; các điểm này không phải kết quả LLM Judge trực tiếp. Repair tạo lại 24 dòng từ raw snapshot, quality/freshness pass và metrics trở lại baseline. Commit kiểm thử `0c809ab` ghi nhận hai pipeline exit 0; artifacts được tạo lúc 2026-09-25 10:51 UTC. CP6 còn các bước demo/Q&A, xác nhận contributor và nộp LMS. Tập dữ liệu nhỏ và test set 10 câu là giới hạn chính.
 
 ## 3. Kiến trúc và luồng dữ liệu
 
@@ -107,8 +107,8 @@ python script/run_corruption_flow.py
 
 | Lệnh             | Trạng thái                                    | Thời điểm chạy gần nhất | Bằng chứng                         |
 | ----------------- | ----------------------------------------------- | ----------------------------- | ------------------------------------ |
-| Baseline pipeline | PR validation commit records exit 0; this review's local rerun stopped while loading the uncached embedding model | Artifacts 2026-09-25 10:51 UTC; local attempt 2026-09-25 | Commit `0c809ab`, `phase1_report.md`, baseline metrics/quality/freshness JSON; local Hugging Face DNS failure |
-| Corruption flow | PR validation commit records exit 0; local corruption/GX/freshness smoke also passed | Artifacts 2026-09-25 10:51 UTC; local smoke 2026-09-25 | Commit `0c809ab`; `/tmp/day10-local-check/`; 24 -> 22 rows, GX 4/6, stale 6/22 |
+| Baseline pipeline | Nhóm đã chạy `run_phase1.py` thành công, exit 0 | Artifacts sinh lúc 2026-09-25 10:51 UTC | Commit kiểm thử `0c809ab`, `phase1_report.md`, baseline metrics/quality/freshness JSON |
+| Corruption flow | Nhóm đã chạy `run_corruption_flow.py` thành công, exit 0 | Artifacts sinh lúc 2026-09-25 10:51 UTC | Commit kiểm thử `0c809ab`, corrupted/repaired metrics, quality/freshness, corruption log; 24 → 22 → 24 dòng |
 
 ## 5. Ingestion, cleaning và data contract
 
@@ -223,8 +223,8 @@ Giữ nguyên câu hỏi và ground truth để biến dữ liệu/index thành 
 Corruption log:
 
 - Đường dẫn: `data/results/corruption_log.json`
-- Trạng thái: Có trong runtime workspace; file log không được commit vì `.gitignore` loại artifact sinh tự động.
-- Nhận xét: Log lưu seed 42, 24 dòng đầu, 22 dòng cuối, 6 loại lỗi và danh sách paper IDs bị tác động.
+- Trạng thái: Đã có trong repository tại `data/results/corruption_log.json`.
+- Nhận xét: Log lưu seed 42, 24 dòng đầu, 22 dòng cuối, đủ 6 loại lỗi, paper IDs bị tác động, ngày stale và số dòng theo từng lỗi.
 
 Giải thích cách repair đảm bảo dữ liệu được phục hồi từ nguồn đáng tin cậy thay vì chỉ che kết quả lỗi:
 
@@ -266,10 +266,11 @@ Các kết quả thể hiện mối liên hệ trong lần chạy ghi nhận: co
 
 - [x] Thông tin nhóm/repository theo `docs/TEAM.md` và remote metadata.
 - [x] Phân công khớp module/artifact; MSSV còn thiếu để N/A.
-- [x] PR validation commit `0c809ab` records both run scripts exit 0; this review's local baseline rerun needs network access to download the uncached embedding model.
+- [x] CP0–CP5: raw snapshot, clean data, test set, 3 Chroma collections, baseline/corrupted/repaired metrics, quality/freshness reports, corruption log và comparison report đều có trong repo; commit `0c809ab` ghi nhận cả hai pipeline exit 0.
 - [x] Ba trạng thái dùng cùng `data/eval/test_set.json`.
 - [x] Metrics và quality/freshness khớp JSON artifacts đã lưu.
 - [x] Đường dẫn báo cáo và artifacts được đối chiếu trong working tree.
 - [x] Báo cáo vai trò riêng của bốn thành viên hiện có trong `report/`.
 - [x] Không thấy credential pattern trong tracked source/report; `.env` không được commit.
-- [ ] Live demo/Q&A, contributor graph của GitHub main và từng cá nhân nộp link VLearn LMS cần nhóm xác nhận.
+- [ ] CP6: live demo/Q&A và xác nhận bảo vệ trước lớp.
+- [ ] Kiểm tra contributor graph trên GitHub `main`; từng thành viên tự nộp link repository trên VLearn LMS.
