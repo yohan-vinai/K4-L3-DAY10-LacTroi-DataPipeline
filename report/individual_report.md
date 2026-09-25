@@ -5,7 +5,7 @@
 | Thông tin         | Nội dung                  |
 | ------------------ | -------------------------- |
 | Họ và tên       | Trần Phạm Thái Vũ          |
-| MSSV               | N/A (GitHub: `elysszxje`)  |
+| MSSV               | 2A202602695                |
 | Khóa/Lớp         | K4-L3A                     |
 | Tên nhóm         | Lạc Trôi                   |
 | Vai trò chính    | Trưởng nhóm / Pipeline Integrator & Điều phối Hệ thống |

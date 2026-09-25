@@ -10,7 +10,7 @@
 
 | STT | Họ và tên | MSSV | Email | Vai trò & Phân công công việc | Báo cáo cá nhân |
 |---:|---|---|---|---|---|
-| 1 | Trần Phạm Thái Vũ | N/A | elysszxje@github | Trưởng nhóm / Pipeline Integrator (`core/`, `phase1.py`, `corruption_flow.py`) | `report/TranPhamThaiVu_Report.md` |
+| 1 | Trần Phạm Thái Vũ | 2A202602695 | elysszxje@github | Trưởng nhóm / Pipeline Integrator (`core/`, `phase1.py`, `corruption_flow.py`) | `report/2A202602695_TranPhamThaiVu.md` |
 | 2 | Võ Phú Hãn | N/A | N/A | Data Core Lead (`crossref.py`, `cleaning.py`, `corruption.py`, raw data) | `report/VoPhuHan_Report.md` |
 | 3 | Nguyễn Tiến Tuân | N/A | N/A | RAG & Vector Index (`retrieval/index.py`, `embeddings.py`, ChromaDB) | `report/NguyenTienTuan_Report.md` |
 | 4 | Vũ Duy Điệp | N/A | N/A | Observability & Evaluation (`quality.py` GX 1.x, `testset.py`, reporting) | `report/VuDuyDiep_Report.md` |
@@ -21,7 +21,7 @@
 
 ## # Cá nhân
 
-### ## TranPhamThaiVu
+### ## TranPhamThaiVu-2A202602695
 - **Vai trò:** Trưởng nhóm & Điều phối Pipeline.
 - **Công việc chi tiết đã hoàn thành:**
   - Thiết lập cấu hình hệ thống `core/config.py` và đường dẫn artifacts `core/utils.py`.

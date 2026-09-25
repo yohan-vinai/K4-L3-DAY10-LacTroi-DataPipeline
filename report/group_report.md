@@ -13,7 +13,7 @@
 
 | STT | Họ và tên | MSSV | Vai trò chính | Module/deliverable sở hữu |
 | --: | --- | --- | --- | --- |
-| 1 | Trần Phạm Thái Vũ | N/A | Trưởng nhóm / Pipeline Integrator | `core/config.py`, `core/utils.py`, `pipelines/phase1.py`, `pipelines/corruption_flow.py`, `script/` |
+| 1 | Trần Phạm Thái Vũ | 2A202602695 | Trưởng nhóm / Pipeline Integrator | `core/config.py`, `core/utils.py`, `pipelines/phase1.py`, `pipelines/corruption_flow.py`, `script/` |
 | 2 | Võ Phú Hãn | N/A | Data Core Lead (Ingestion, Cleaning, Repair) | `ingestion/crossref.py`, `ingestion/cleaning.py`, `ingestion/corruption.py`, `data/raw/`, `data/clean/` |
 | 3 | Nguyễn Tiến Tuân | N/A | RAG & Vector Store Specialist | `retrieval/embeddings.py`, `retrieval/index.py`, `retrieval/agent.py`, `retrieval/qa.py`, ChromaDB |
 | 4 | Vũ Duy Điệp | N/A | Observability & Evaluation Lead | `observability/quality.py` (GX 1.x), `observability/reporting.py`, `evaluation/testset.py`, `evaluation/metrics.py` |
