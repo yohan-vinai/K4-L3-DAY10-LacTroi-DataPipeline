@@ -25,8 +25,8 @@
 Nhóm đã hoàn thành toàn bộ 7 Checkpoint (CP0 – CP6), thiết lập trọn vẹn kiến trúc Data Pipeline công nghiệp khép kín kết hợp Data Observability cho hệ thống RAG Agent.
 
 - **Baseline Pipeline:** Ingestion thành công 24 bài báo khoa học từ Crossref Academic REST API (có cơ chế offline fallback), chuẩn hóa văn bản, tính toán `age_days`, tạo chuỗi định dạng ngữ cảnh `text_for_embedding`, và lập chỉ mục vào collection `papers-baseline` trong ChromaDB. Bộ đánh giá 10 câu hỏi chuẩn hóa đa dạng (`summary`, `authors`, `date`, `categories`) đạt chỉ số hoàn hảo: **Retrieval Hit Rate = 1.0000**, **Mean Token F1 = 1.0000**, **Judge Accuracy = 1.0000**, và hệ thống Quality Gate đạt **PASSED**.
-- **Hiện tượng Silent Failure:** Tiêm 6 kịch bản suy thoái dữ liệu có kiểm soát (`seed=42`) khiến Agent suy giảm chất lượng nghiêm trọng: Retrieval Hit Rate sụt giảm 50% (còn 0.5000), Token F1 tụt xuống 0.6506, điểm số LLM Judge giảm từ 5.0 xuống 3.4 mà không có bất kỳ ngoại lệ runtime nào văng ra.
-- **Hệ thống Cảnh báo Sớm:** Chặn đứng thành công dữ liệu bẩn trước khi vào serving layer. Great Expectations 1.x ephemeral mode phát hiện vi phạm tính duy nhất của `paper_id` và độ dài tối thiểu của `summary` (`success: False`). Freshness SLA cảnh báo dữ liệu quá hạn với tỷ lệ stale là **27.27%** (vượt ngưỡng 25%).
+- **Hiện tượng Silent Failure:** Tiêm 6 kịch bản suy thoái dữ liệu có kiểm soát (`seed=42`) khiến Agent suy giảm chất lượng nghiêm trọng: Retrieval Hit Rate sụt giảm 50% (còn 0.5000), Token F1 tụt xuống 0.7246, điểm số LLM Judge giảm từ 5.0 xuống 3.6 mà không có bất kỳ ngoại lệ runtime nào văng ra.
+- **Hệ thống Cảnh báo Sớm:** Chặn đứng thành công dữ liệu bẩn trước khi vào serving layer. Great Expectations 1.x ephemeral mode phát hiện vi phạm tính duy nhất của `paper_id` và độ dài tối thiểu của `summary` (`success: False`). Freshness SLA cảnh báo dữ liệu quá hạn với tỷ lệ stale là **33.33%** (vượt ngưỡng 25%).
 - **Idempotent Repair:** Cơ chế phục hồi tự động từ raw snapshot (`crossref_records.json`) đã tái tạo lại toàn bộ 24 bản ghi sạch, tái lập index collection `papers-repaired`, phục hồi 100% hiệu năng của Agent (Hit Rate 1.0, Token F1 1.0, Judge Accuracy 1.0) và đưa Quality Gate / Freshness SLA trở về trạng thái PASSED.
 
 ---
@@ -285,14 +285,14 @@ Hệ thống không thực hiện các câu lệnh "vá víu" chắp vá trên D
 | Metric/signal | Baseline | Corrupted | Repaired | Thay đổi do corruption | Mức phục hồi | Nhận xét |
 |---|---:|---:|---:|---:|---:|---|
 | `retrieval_hit_rate` | 1.0000 | 0.5000 | 1.0000 | 🔻 Giảm 50.00% | 100% | Mất 5 bài báo mới khiến 5 câu hỏi truy vấn trượt hoàn toàn; phục hồi hoàn toàn sau repair |
-| `mean_token_f1` | 1.0000 | 0.6506 | 1.0000 | 🔻 Giảm 34.94% | 100% | Abstract rỗng và chuỗi rác làm câu trả lời thiếu hụt thông tin; phục hồi 100% |
-| `judge_accuracy` | 1.0000 | 0.7000 | 1.0000 | 🔻 Giảm 30.00% | 100% | 3 câu hỏi trượt hoàn toàn nội dung; phục hồi chuẩn xác sau repair |
-| `mean_judge_score` | 5.0000 | 3.4000 | 5.0000 | 🔻 Giảm 1.60 điểm | 100% | Điểm chất lượng sụt giảm nghiêm trọng; trở lại điểm tối đa 5/5 |
+| `mean_token_f1` | 1.0000 | 0.7246 | 1.0000 | 🔻 Giảm 27.54% | 100% | Abstract rỗng và chuỗi rác làm câu trả lời thiếu hụt thông tin; phục hồi 100% |
+| `judge_accuracy` | 1.0000 | 0.8000 | 1.0000 | 🔻 Giảm 20.00% | 100% | Câu hỏi trượt nội dung do mất tài liệu; phục hồi chuẩn xác sau repair |
+| `mean_judge_score` | 5.0000 | 3.6000 | 5.0000 | 🔻 Giảm 1.40 điểm | 100% | Điểm chất lượng sụt giảm nghiêm trọng; trở lại điểm tối đa 5/5 |
 | Quality Gate (GX 1.x) | True | False | True | ❌ Bị đánh trượt | 100% | Bắt lỗi duplicate ID và empty summary; vượt qua sau repair |
-| Freshness SLA (is_fresh) | True | False | True | ❌ Bị cảnh báo | 100% | Stale ratio từ 27.27% giảm về 4.17% sau repair |
+| Freshness SLA (is_fresh) | True | False | True | ❌ Bị cảnh báo | 100% | Stale ratio từ 33.33% giảm về 4.17% sau repair |
 
 **Hai kết luận có quan hệ nhân quả:**
-1. **Dữ liệu bẩn sinh ra Silent Failure:** Việc xóa rỗng tóm tắt và xóa bớt tài liệu (`corruption`) dẫn tới việc Great Expectations phát hiện vi phạm độ dài (`quality signal`), trực tiếp kéo tụt Retrieval Hit Rate từ 1.0 xuống 0.50 và Token F1 từ 1.0 xuống 0.65 (`agent metric`). RAG Agent không văng ngoại lệ runtime nào mà tự tin trả về kết quả sai lệch.
+1. **Dữ liệu bẩn sinh ra Silent Failure:** Việc xóa rỗng tóm tắt và xóa bớt tài liệu (`corruption`) dẫn tới việc Great Expectations phát hiện vi phạm độ dài (`quality signal`), trực tiếp kéo tụt Retrieval Hit Rate từ 1.0 xuống 0.50 và Token F1 từ 1.0 xuống 0.7246 (`agent metric`). RAG Agent không văng ngoại lệ runtime nào mà tự tin trả về kết quả sai lệch.
 2. **Cơ chế Idempotent Repair khôi phục hoàn toàn chất lượng:** Việc chạy lại chu trình làm sạch từ raw snapshot (`repair action`) đã loại bỏ toàn bộ bản ghi trùng lặp và phục hồi abstract đầy đủ (`quality recovery`), đưa cả Quality Gate và Freshness SLA về `True`, giúp RAG Agent phục hồi 100% điểm số ban đầu (`agent recovery`: Hit Rate 1.0, Token F1 1.0).
 
 ---

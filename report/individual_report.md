@@ -47,7 +47,7 @@
 **Output cụ thể tạo ra:**
 Báo cáo đối chiếu [`data/reports/corruption_report.md`](file:///D:/Lab/K4-L3A-Day10-Data-Pipeline-Data-Observability/data/reports/corruption_report.md) thể hiện đầy đủ bức tranh định lượng:
 - Baseline: Hit Rate 1.0, Token F1 1.0, Quality Gate True, Freshness True.
-- Corrupted: Hit Rate 0.50, Token F1 0.6506, Quality Gate False, Freshness False (stale 27.27%).
+- Corrupted: Hit Rate 0.50, Token F1 0.7246, Quality Gate False, Freshness False (stale 33.33%).
 - Repaired: Hit Rate 1.0, Token F1 1.0, Quality Gate True, Freshness True.
 
 ---
@@ -146,15 +146,15 @@ $env:PYTHONIOENCODING="utf-8"
 | Metric/signal | Baseline | Corrupted | Repaired | Nhận xét của cá nhân |
 |---|---:|---:|---:|---|
 | `retrieval_hit_rate` | 1.0000 | 0.5000 | 1.0000 | Tụt dốc một nửa khi mất 20% bài báo mới; khôi phục hoàn toàn sau repair |
-| `mean_token_f1` | 1.0000 | 0.6506 | 1.0000 | Mất tóm tắt và nhiễu rác làm giảm F1 nghiêm trọng; trở về 1.0 sau repair |
-| `judge_accuracy` | 1.0000 | 0.7000 | 1.0000 | 3 câu hỏi trượt hoàn toàn nội dung; phục hồi 100% sau repair |
-| `mean_judge_score` | 5.0000 | 3.4000 | 5.0000 | Chất lượng câu trả lời giảm sút rõ rệt; trở về điểm tuyệt đối 5/5 |
+| `mean_token_f1` | 1.0000 | 0.7246 | 1.0000 | Mất tóm tắt và nhiễu rác làm giảm F1; trở về 1.0 sau repair |
+| `judge_accuracy` | 1.0000 | 0.8000 | 1.0000 | Câu hỏi trượt nội dung do mất tài liệu; phục hồi 100% sau repair |
+| `mean_judge_score` | 5.0000 | 3.6000 | 5.0000 | Chất lượng câu trả lời giảm sút rõ rệt; trở về điểm tuyệt đối 5/5 |
 | Quality checks | True | False | True | Bắt lỗi duplicate và empty summary thành công; pass sau repair |
-| Freshness status | True | False | True | Phát hiện stale ratio 27.27% > 25%; pass sau repair |
+| Freshness status | True | False | True | Phát hiện stale ratio 33.33% > 25%; pass sau repair |
 
 ### Kết luận từ số liệu
 
-1. **Chuỗi 1 (Corruption -> Degradation):** Tiêm lỗi xóa 20% bài báo và làm rỗng summary -> Great Expectations báo lỗi `expect_column_value_lengths_to_be_between` -> Retrieval Hit Rate rơi từ 1.0 xuống 0.50, Token F1 giảm từ 1.0 xuống 0.65.
+1. **Chuỗi 1 (Corruption -> Degradation):** Tiêm lỗi xóa 20% bài báo và làm rỗng summary -> Great Expectations báo lỗi `expect_column_value_lengths_to_be_between` -> Retrieval Hit Rate rơi từ 1.0 xuống 0.50, Token F1 giảm từ 1.0 xuống 0.7246.
 2. **Chuỗi 2 (Repair -> Recovery):** Kích hoạt cơ chế Idempotent Repair từ raw snapshot -> GX Quality Gate và Freshness SLA phục hồi trạng thái `True` -> RAG Agent phục hồi trọn vẹn 100% Hit Rate và Token F1 (1.0).
 
 **Corruption nào ảnh hưởng rõ nhất và vì sao?**

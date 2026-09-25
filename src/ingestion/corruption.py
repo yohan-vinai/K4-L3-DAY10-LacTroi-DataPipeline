@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-import pandas as pd
-
-
 from datetime import UTC, datetime, timedelta
 import math
-from pathlib import Path
 import random
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
@@ -30,7 +27,7 @@ def _rebuild_embedding_text(row: pd.Series) -> str:
     )
 
 
-def corrupt_clean_dataframe(df: pd.DataFrame, output_log_path: Path | str) -> pd.DataFrame:
+def corrupt_clean_dataframe(df: pd.DataFrame, output_log_path: Path) -> pd.DataFrame:
     """Apply six reproducible data-quality failures and write an audit log."""
     required = {"paper_id", "title", "summary", "published", "age_days", "text_for_embedding"}
     missing = required.difference(df.columns)
@@ -57,15 +54,13 @@ def corrupt_clean_dataframe(df: pd.DataFrame, output_log_path: Path | str) -> pd
 
     remaining = corrupted.index.tolist()
     available = remaining.copy()
-
     # 2. Blank summaries on 20% of surviving rows.
     blank_indices = _sample(rng, available, max(1, math.ceil(len(remaining) * 0.20)))
     available = [index for index in available if index not in blank_indices]
     for index in blank_indices:
         corrupted.at[index, "summary"] = ""
     changes.append({
-        "type": "blank_summary",
-        "count": len(blank_indices),
+        "type": "blank_summary", "count": len(blank_indices),
         "paper_ids": corrupted.loc[blank_indices, "paper_id"].astype(str).tolist(),
     })
 
@@ -76,8 +71,7 @@ def corrupt_clean_dataframe(df: pd.DataFrame, output_log_path: Path | str) -> pd
         current = str(corrupted.at[index, "summary"] or "").strip()
         corrupted.at[index, "summary"] = f"{current} ###CORRUPTED_GARBAGE_NOISE###".strip()
     changes.append({
-        "type": "inject_noise",
-        "count": len(noise_indices),
+        "type": "inject_noise", "count": len(noise_indices),
         "paper_ids": corrupted.loc[noise_indices, "paper_id"].astype(str).tolist(),
         "marker": "###CORRUPTED_GARBAGE_NOISE###",
     })
@@ -88,25 +82,21 @@ def corrupt_clean_dataframe(df: pd.DataFrame, output_log_path: Path | str) -> pd
     for index in title_indices:
         corrupted.at[index, "title"] = str(corrupted.at[index, "title"])[:5]
     changes.append({
-        "type": "truncate_title",
-        "count": len(title_indices),
-        "paper_ids": corrupted.loc[title_indices, "paper_id"].astype(str).tolist(),
-        "max_title_chars": 5,
+        "type": "truncate_title", "count": len(title_indices),
+        "paper_ids": corrupted.loc[title_indices, "paper_id"].astype(str).tolist(), "max_title_chars": 5,
     })
 
-    # 5. Make rows older than the 180-day freshness SLA (at least 6 rows to exceed 25% threshold).
-    stale_indices = _sample(rng, available, max(6, math.ceil(len(remaining) * 0.25)))
+    # 5. Make three rows older than the 180-day freshness SLA.
+    stale_indices = _sample(rng, available, 3)
     available = [index for index in available if index not in stale_indices]
     stale_day = datetime.now(UTC).date() - timedelta(days=365)
     for index in stale_indices:
         corrupted.at[index, "published"] = stale_day.isoformat()
         corrupted.at[index, "age_days"] = 365
     changes.append({
-        "type": "stale_date",
-        "count": len(stale_indices),
+        "type": "stale_date", "count": len(stale_indices),
         "paper_ids": corrupted.loc[stale_indices, "paper_id"].astype(str).tolist(),
-        "published": stale_day.isoformat(),
-        "age_days": 365,
+        "published": stale_day.isoformat(), "age_days": 365,
     })
 
     # 6. Append copies of three surviving records to create duplicate IDs.
@@ -127,4 +117,3 @@ def corrupt_clean_dataframe(df: pd.DataFrame, output_log_path: Path | str) -> pd
     }
     write_json(Path(output_log_path), log)
     return corrupted
-
