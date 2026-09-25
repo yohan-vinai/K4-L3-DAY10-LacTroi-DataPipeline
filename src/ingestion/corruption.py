@@ -86,8 +86,8 @@ def corrupt_clean_dataframe(df: pd.DataFrame, output_log_path: Path) -> pd.DataF
         "paper_ids": corrupted.loc[title_indices, "paper_id"].astype(str).tolist(), "max_title_chars": 5,
     })
 
-    # 5. Make three rows older than the 180-day freshness SLA.
-    stale_indices = _sample(rng, available, 3)
+    # 5. Make rows older than the 180-day freshness SLA (at least 6 rows to exceed 25% threshold).
+    stale_indices = _sample(rng, available, max(6, math.ceil(len(remaining) * 0.25)))
     available = [index for index in available if index not in stale_indices]
     stale_day = datetime.now(UTC).date() - timedelta(days=365)
     for index in stale_indices:

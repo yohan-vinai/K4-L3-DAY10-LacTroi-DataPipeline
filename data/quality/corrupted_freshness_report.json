@@ -1,10 +1,10 @@
 {
-  "latest_published": "2026-06-08",
-  "oldest_published": "2020-01-01",
-  "total_rows": 21,
-  "stale_rows": 7,
-  "stale_ratio": 0.3333,
+  "latest_published": "2026-06-12",
+  "oldest_published": "2025-09-25",
+  "total_rows": 22,
+  "stale_rows": 6,
+  "stale_ratio": 0.2727,
   "freshness_threshold_days": 180,
   "is_fresh": false,
-  "generated_at": "2026-09-25T09:49:18.509466+00:00"
+  "generated_at": "2026-09-25T10:51:56.598657+00:00"
 }

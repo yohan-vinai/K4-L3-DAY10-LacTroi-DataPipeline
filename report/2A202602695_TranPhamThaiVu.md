@@ -45,7 +45,7 @@
 | Tạo báo cáo đối chiếu định lượng | `data/reports/corruption_report.md` | Bảng so sánh 3 cột: Baseline vs Corrupted vs Repaired | Đọc trực tiếp file markdown kết quả |
 
 **Output cụ thể tạo ra:**
-Báo cáo đối chiếu [`data/reports/corruption_report.md`](file:///D:/Lab/K4-L3A-Day10-Data-Pipeline-Data-Observability/data/reports/corruption_report.md) thể hiện đầy đủ bức tranh định lượng:
+Báo cáo đối chiếu [`data/reports/corruption_report.md`](../data/reports/corruption_report.md) thể hiện đầy đủ bức tranh định lượng:
 - Baseline: Hit Rate 1.0, Token F1 1.0, Quality Gate True, Freshness True.
 - Corrupted: Hit Rate 0.50, Token F1 0.6506, Quality Gate False, Freshness False (stale 27.27%).
 - Repaired: Hit Rate 1.0, Token F1 1.0, Quality Gate True, Freshness True.
@@ -154,7 +154,7 @@ $env:PYTHONIOENCODING="utf-8"
 
 ### Kết luận từ số liệu
 
-1. **Chuỗi 1 (Corruption -> Degradation):** Tiêm lỗi xóa 20% bài báo và làm rỗng summary -> Great Expectations báo lỗi `expect_column_value_lengths_to_be_between` -> Retrieval Hit Rate rơi từ 1.0 xuống 0.50, Token F1 giảm từ 1.0 xuống 0.65.
+1. **Chuỗi 1 (Corruption -> Degradation):** Tiêm lỗi xóa 20% bài báo và làm rỗng summary -> Great Expectations báo lỗi `expect_column_value_lengths_to_be_between` -> Retrieval Hit Rate rơi từ 1.0 xuống 0.50, Token F1 giảm từ 1.0 xuống 0.6506.
 2. **Chuỗi 2 (Repair -> Recovery):** Kích hoạt cơ chế Idempotent Repair từ raw snapshot -> GX Quality Gate và Freshness SLA phục hồi trạng thái `True` -> RAG Agent phục hồi trọn vẹn 100% Hit Rate và Token F1 (1.0).
 
 **Corruption nào ảnh hưởng rõ nhất và vì sao?**
